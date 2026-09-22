@@ -1,0 +1,14 @@
+name: 'Gitleaks Secret Scan'
+description: 'Zero-Shame Gitleaks scanner for TheNovaNodes ecosystem'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Code (Full History)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Run Gitleaks Detection
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
