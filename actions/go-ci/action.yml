@@ -1,0 +1,48 @@
+name: 'Go CI Quality Gate'
+description: 'Standardized Go CI pipeline: vet, unit tests with race detection, and binary verification'
+
+inputs:
+  go-version:
+    description: 'Go version or version file'
+    required: false
+    default: ''
+  go-version-file:
+    description: 'Path to go.mod or go version file'
+    required: false
+    default: 'go.mod'
+  test-flags:
+    description: 'Flags passed to go test'
+    required: false
+    default: '-v -race ./...'
+  build-packages:
+    description: 'Packages to verify with go build'
+    required: false
+    default: './...'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 🐹 Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        go-version-file: ${{ inputs.go-version-file }}
+        cache: true
+
+    - name: 🔍 Go Vet & Static Verification
+      shell: bash
+      run: |
+        echo "🔍 Running go vet..."
+        go vet ./...
+
+    - name: 🧪 Go Test (Race Detector)
+      shell: bash
+      run: |
+        echo "🧪 Running go tests with race detector..."
+        go test ${{ inputs.test-flags }}
+
+    - name: 🏗️ Go Build Verification
+      shell: bash
+      run: |
+        echo "🏗️ Verifying build compilation..."
+        go build -v ${{ inputs.build-packages }}

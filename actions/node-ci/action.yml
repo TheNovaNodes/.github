@@ -1,0 +1,78 @@
+name: 'Node.js & TypeScript CI Quality Gate'
+description: 'Standardized Node.js/TypeScript CI pipeline: dependencies, lint, typecheck, tests, and build'
+
+inputs:
+  node-version:
+    description: 'Node.js version'
+    required: false
+    default: '20'
+  working-directory:
+    description: 'Directory containing package.json'
+    required: false
+    default: '.'
+  run-lint:
+    description: 'Whether to execute npm run lint'
+    required: false
+    default: 'true'
+  run-test:
+    description: 'Whether to execute npm test'
+    required: false
+    default: 'true'
+  run-build:
+    description: 'Whether to execute npm run build'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 🟢 Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: '${{ inputs.working-directory }}/package-lock.json'
+
+    - name: 📦 Install Dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "📦 Installing clean dependencies (npm ci)..."
+        npm ci
+
+    - name: 🔍 Lint & Static Analysis
+      if: ${{ inputs.run-lint == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if npm run | grep -q " lint$"; then
+          echo "🔍 Running npm run lint..."
+          npm run lint
+        elif [ -f "tsconfig.json" ]; then
+          echo "ℹ️ No lint script found, executing tsc --noEmit..."
+          npx tsc --noEmit
+        fi
+
+    - name: 🧪 Unit & Integration Tests
+      if: ${{ inputs.run-test == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if npm run | grep -q " test$"; then
+          echo "🧪 Running npm test..."
+          npm test
+        else
+          echo "ℹ️ No test script found, skipping test execution."
+        fi
+
+    - name: 🏗️ Production Build Verification
+      if: ${{ inputs.run-build == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if npm run | grep -q " build$"; then
+          echo "🏗️ Running npm run build..."
+          npm run build
+        else
+          echo "ℹ️ No build script found, skipping build verification."
+        fi
