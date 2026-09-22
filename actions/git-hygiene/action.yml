@@ -1,0 +1,60 @@
+name: 'Git Hygiene & Quality Gates'
+description: 'Full-spectrum Git hygiene: Gitleaks secret scan, large files detector, .gitignore audit, and conventional commit check'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Code (Full History)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🛡️ Gitleaks Secret Detection
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: 📦 Large File Check (>10MB)
+      shell: bash
+      run: |
+        echo "🔍 Checking for files larger than 10MB..."
+        FOUND=$(find . -type f -size +10M ! -path './.git/*' ! -path './node_modules/*' 2>/dev/null || true)
+        if [ -n "$FOUND" ]; then
+          echo "❌ Critical: Files larger than 10MB detected in repository index:"
+          echo "$FOUND"
+          echo "Please remove large files or use Git LFS."
+          exit 1
+        fi
+        echo "✅ No oversized files found."
+
+    - name: 🔒 .gitignore Hygiene Check
+      shell: bash
+      run: |
+        echo "🔍 Verifying .gitignore integrity..."
+        if [ ! -f ".gitignore" ]; then
+          echo "❌ .gitignore missing in repository root!"
+          exit 1
+        fi
+        echo "✅ .gitignore present."
+        for pattern in '.env' '*.db' 'runtime/' '.venv/'; do
+          if ! grep -qF "$pattern" .gitignore; then
+            echo "⚠️  Recommended pattern missing in .gitignore: $pattern"
+          fi
+        done
+
+    - name: 📝 Conventional Commit Format Check
+      shell: bash
+      run: |
+        echo "🔍 Verifying commit message conventions..."
+        COMMITS=$(git log -5 --oneline 2>/dev/null || true)
+        if [ -n "$COMMITS" ]; then
+          echo "Recent commits:"
+          echo "$COMMITS"
+          NON_CONFORMING=$(echo "$COMMITS" | grep -vE '^(feat|fix|chore|docs|test|refactor|ci|build|style|perf|revert|merge)(\(.+\))?: ' || true)
+          if [ -n "$NON_CONFORMING" ]; then
+            echo "⚠️  Non-conventional commit formats detected (warning):"
+            echo "$NON_CONFORMING"
+          else
+            echo "✅ All recent commits follow Conventional Commits format."
+          fi
+        fi
