@@ -9,6 +9,10 @@ runs:
       with:
         fetch-depth: 0
 
+    - name: 🧹 Clean Installer Temp Buffers
+      shell: bash
+      run: rm -f /tmp/gitleaks.tmp
+
     - name: 🛡️ Gitleaks Secret Detection
       uses: gitleaks/gitleaks-action@v2
       env:
