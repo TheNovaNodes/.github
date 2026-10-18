@@ -1,0 +1,46 @@
+name: 🛸 Repository CI & Syntax Verification
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: YAML & Metadata Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: '3.11'
+
+      - name: Validate YAML Files
+        run: |
+          python3 -c "
+          import glob, yaml, sys
+          files = set(glob.glob('**/*.yml', recursive=True) + glob.glob('**/*.yaml', recursive=True) + glob.glob('.github/**/*.yml', recursive=True) + glob.glob('.github/**/*.yaml', recursive=True))
+          failed = False
+          for f in sorted(files):
+              try:
+                  with open(f, 'r', encoding='utf-8') as fp:
+                      yaml.safe_load(fp)
+                  print(f'✅ {f} is valid YAML')
+              except Exception as e:
+                  print(f'❌ {f} parsing error: {e}')
+                  failed = True
+          if failed:
+              sys.exit(1)
+          "
