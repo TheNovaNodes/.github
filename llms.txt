@@ -1,0 +1,19 @@
+# TheNovaNodes .github — Organization Defaults & Standards
+
+> Central organization repository housing community health files, standard workflows, and composite actions for TheNovaNodes.
+
+## Repository Overview
+The `.github` repository defines default templates and composite CI/CD actions inherited by all repositories under the `TheNovaNodes` organization.
+
+## Architectural Standards & Directives
+- [AGENTS.md](AGENTS.md): Canonical operational contract for AI coding agents and architects.
+- [SECURITY.md](SECURITY.md): Responsible disclosure policy and security response guidelines.
+- [CONTRIBUTING.md](CONTRIBUTING.md): Organization-wide Git Flow and contribution rules.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): Contributor Covenant v2.1 community standard.
+
+## Reusable Actions & Workflows
+- `actions/git-hygiene`: Full-spectrum Git hygiene gate (Gitleaks, large files detection, .gitignore verification, Conventional Commits).
+- `actions/go-ci`: Standardized Go pipeline (vet, unit tests with race detection, compilation).
+- `actions/node-ci`: Standardized Node.js/TypeScript pipeline (lint, typecheck, tests, build).
+- `actions/secret-scan`: Zero-shame Gitleaks scanner.
+- `.github/workflows/reusable-secret-scan.yml`: Reusable workflow for deep secret scanning with concurrency controls.
