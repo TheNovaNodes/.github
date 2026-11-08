@@ -21,6 +21,8 @@ Thumbs.db
 runtime/
 dist/
 build/
+.deploy_rollback_capsule/
+governance_manifest.json
 
 # Environment Variables & Secrets
 .env

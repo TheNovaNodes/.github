@@ -39,5 +39,25 @@ This repository serves as the central baseline for the [`TheNovaNodes`](https://
 
 ---
 
+### 🚀 Production Deployment (5-Echelon Automated Gate)
+In accordance with TheNovaNodes ecosystem standards, organization standards deployment and validation is orchestrated via `./scripts/deploy.sh`:
+
+```bash
+# Execute standard 5-echelon deployment
+./scripts/deploy.sh
+
+# Dry-run validation (validate without writing release manifest)
+./scripts/deploy.sh --dry-run
+```
+
+**Deployment Echelons:**
+1. **🛡️ Échelon 0: Pre-Flight Guard & Rollback Capsule:** Toolchain checks, resolves `TARGET_COMMIT`, and archives existing manifests into `.deploy_rollback_capsule/`.
+2. **🧱 Échelon 1: Production Isolation Probe:** Validates all YAML manifests, workflows, composite actions, and ensures git working tree cleanliness.
+3. **🔄 Échelon 2: Atomic Switch & Graceful Shift:** Atomically writes `governance_manifest.json` with `TARGET_COMMIT` and composite action inventory.
+4. **🪞 Échelon 3: Identity & Truth Probe:** Verifies runtime manifest `commit` matches `git rev-parse HEAD`.
+5. **🔍 Échelon 4: Deep Smoke Probe & Rollback Gate:** Confirms integrity of critical templates and governance files. Automatic instant rollback (`trap rollback ERR EXIT`) on any anomaly.
+
+---
+
 ## 🔗 Architecture & Protocols
 For deep architectural manifests and agent coordination protocols, see [`TheNovaNodes/ecosystem-docs`](https://github.com/TheNovaNodes/ecosystem-docs).
